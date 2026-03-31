@@ -12,7 +12,11 @@ public class OrderItem {
         return this.item;
     }
 
-    public int quantity() {
+    public int getQuantity() {
         return this.quantity;
+    }
+
+    public float calculatePrice() {
+        return this.item.getPrice() * this.quantity;
     }
 }

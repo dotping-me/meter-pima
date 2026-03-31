@@ -1,26 +1,29 @@
-# meter-pima
-A small fast food shop java application software.
+# 🌶️🫪 Snack POS System
+A Java application to manage **ingredients** in inventory, edit **menu items**, take **orders**, and process **payments** (figuratively).
 
-# Fork your own Fork
-git clone https://github.com/yourname/meter-pima.git
+## 📦 Prerequisites
+The application requires the following:
 
-# Makes personal changes on branches
-git checkout -b <branch-name>
+1. Java JDK 25.0.2+
+    * Download [Java JDK 25](https://www.oracle.com/java/technologies/javase/jdk25-archive-downloads.html) here!  
 
-# After you have made your changes
-git add .
-git commit -m "branch-name message"
-git push origin <branch-name>
+2. SQLite JDBC Driver
+    * Download [SQLite JDBC](https://github.com/xerial/sqlite-jdbc/releases/tag/3.51.2.0) here!
 
-# Update your main repo
-git checkout <branch-name>
-git pull origin main
+## 💻 Setup & Usage
+Follow these steps to be able to run the application properly.
 
-## Basically
+1. **Clone the repository.**
+    ```bash
+    git clone https://github.com/zeh-raan/meter-pima.git
+    ```
 
-1. Download [SQLite JDBC](https://github.com/xerial/sqlite-jdbc/releases/tag/3.51.2.0) here!
+2. **Navigate to the project directory.**
+    ```bash
+    cd meter-pima/
+    ```
 
-2. Run the system
+3. **Run the application.**
     ```bash
     java -classpath ".:sqlite-jdbc-3.51.2.0.jar" Main.java
     ```
