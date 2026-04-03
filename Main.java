@@ -1,4 +1,6 @@
 // TODO: Make proper packages (folders) for better seperation of concerns
+// F u NO
+import db.DB;
 
 public class Main {
     public static void main(String[] args) {

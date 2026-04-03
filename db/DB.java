@@ -1,3 +1,5 @@
+package db;
+
 import java.sql.*;
 
 public class DB {
@@ -6,7 +8,7 @@ public class DB {
     public static void Connect() {
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection("jdbc:sqlite:test.db"); // TODO: Pull name from .env
+            conn = DriverManager.getConnection("jdbc:sqlite:db/test.db"); // TODO: Pull name from .env
             
             // Creates tables if they do not exist
 
