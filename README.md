@@ -9,6 +9,10 @@ The application requires the following:
 
 2. SQLite JDBC Driver **JAR**
     * Download [SQLite JDBC](https://github.com/xerial/sqlite-jdbc/releases/tag/3.51.2.0) here!
+    * Copy driver to working directory.
+        ```bash
+        cp Downloads/sqlite-jdbc-3.51.2.0.jar path/meter-pima/
+        ```
 
 ## 💻 Setup & Usage
 Follow these steps to be able to run the application properly.

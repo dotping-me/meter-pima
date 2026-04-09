@@ -1,9 +1,8 @@
 package gui;
 
-import model.Staff;
-
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
+import model.Staff;
 
 public class MainFrame extends JFrame {
     private JPanel mainPanel;
@@ -44,7 +43,7 @@ public class MainFrame extends JFrame {
         sidebar.add(inventoryBtn);
         sidebar.add(Box.createRigidArea(new Dimension(0, 10))); // spacing
 
-        if (currentUser.isAdmin()) {
+        if (currentUser.isAdmin() == 1) {
             JButton staffBtn = createSidebarButton("Staff");
             staffBtn.addActionListener(e -> cardLayout.show(mainPanel, "Staff"));
             sidebar.add(staffBtn);

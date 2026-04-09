@@ -1,12 +1,11 @@
 package gui;
 
 import dao.StaffDAO;
-import model.Staff;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import model.Staff;
 
 public class StaffPanel extends JPanel {
     private final StaffDAO dao = new StaffDAO();
@@ -42,7 +41,7 @@ public class StaffPanel extends JPanel {
 
         add(buttonPanel, BorderLayout.SOUTH);
 
-        if (!currentUser.isAdmin()) {
+        if (currentUser.isAdmin() != 1) {
             createBtn.setEnabled(false);
             updateBtn.setEnabled(false);
             deleteBtn.setEnabled(false);
@@ -61,7 +60,7 @@ public class StaffPanel extends JPanel {
         List<Staff> staffList = dao.getAll();
         tableModel.setRowCount(0);
         for (Staff s : staffList) {
-            tableModel.addRow(new Object[]{s.getId(), s.getName(), s.isAdmin() ? "Manager" : "Cashier"});
+            tableModel.addRow(new Object[]{s.getId(), s.getName(), s.isAdmin() == 1 ? "Manager" : "Cashier"});
         }
     }
 
@@ -75,7 +74,7 @@ public class StaffPanel extends JPanel {
             try {
                 String name = nameField.getText().trim();
                 String password = passwordField.getText().trim();
-                boolean isAdmin = adminCheck.isSelected();
+                int isAdmin = adminCheck.isSelected() ? 1 : 0;
                 if (name.isEmpty() || password.isEmpty())
                     throw new IllegalArgumentException("Name and password cannot be empty");
 
@@ -94,14 +93,14 @@ public class StaffPanel extends JPanel {
 
         JTextField nameField = new JTextField(staff.getName());
         JTextField passwordField = new JTextField(staff.getPassword());
-        JCheckBox adminCheck = new JCheckBox("Is Manager?", staff.isAdmin());
+        JCheckBox adminCheck = new JCheckBox("Is Manager?", staff.isAdmin() == 1);
         Object[] msg = {"Name:", nameField, "Password:", passwordField, "Role:", adminCheck};
 
         if (JOptionPane.showConfirmDialog(this, msg, "Update Staff", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
             try {
                 String name = nameField.getText().trim();
                 String password = passwordField.getText().trim();
-                boolean isAdmin = adminCheck.isSelected();
+                int isAdmin = adminCheck.isSelected() ? 1 : 0;
                 if (name.isEmpty() || password.isEmpty())
                     throw new IllegalArgumentException("Name and password cannot be empty");
 

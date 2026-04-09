@@ -1,18 +1,20 @@
 package gui;
 
-import dao.IngredientDAO;
-import model.Ingredient;
-import model.Manager;
-import model.Staff;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import dao.MenuSnackItemDAO;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import model.CanRestock;
+import model.Drink;
+import model.Food;
+import model.MenuSnackItem;
+import model.Staff;
 
 public class InventoryPanel extends JPanel {
-    private static final IngredientDAO dao = new IngredientDAO();
+
+    private static final MenuSnackItemDAO dao = new MenuSnackItemDAO();
     private final Staff currentUser;
 
     private JTable table;
@@ -20,144 +22,212 @@ public class InventoryPanel extends JPanel {
 
     public InventoryPanel(Staff currentUser) {
         this.currentUser = currentUser;
-        setLayout(new BorderLayout());
 
-        // Table
-        tableModel = new DefaultTableModel(new String[]{"ID", "Name", "Quantity"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
-        };
-        table = new JTable(tableModel);
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Buttons
-        JPanel buttonPanel = new JPanel();
-        JButton createBtn = new JButton("Create");
-        JButton findBtn = new JButton("Find");
-        JButton refreshBtn = new JButton("Refresh");
-        JButton updateBtn = new JButton("Update");
-        JButton deleteBtn = new JButton("Delete");
-        JButton reStockBtn = new JButton("Restock");
-
-        buttonPanel.add(createBtn);
-        buttonPanel.add(findBtn);
-        buttonPanel.add(refreshBtn);
-        buttonPanel.add(updateBtn);
-        buttonPanel.add(deleteBtn);
-        buttonPanel.add(reStockBtn);
-
-        add(buttonPanel, BorderLayout.SOUTH);
-
-        if (!currentUser.isAdmin()) {
-            createBtn.setEnabled(false);
-            updateBtn.setEnabled(false);
-            deleteBtn.setEnabled(false);
-            reStockBtn.setEnabled(false);
-        }
-
-        // Actions
-        refreshBtn.addActionListener(e -> refreshTableWithAll());
-        findBtn.addActionListener(e -> findIngredient());
-        createBtn.addActionListener(e -> createIngredient());
-        updateBtn.addActionListener(e -> updateIngredient());
-        deleteBtn.addActionListener(e -> deleteIngredient());
-        reStockBtn.addActionListener(e -> restockIngredient());
+        initTable();
+        initButtons();
 
         refreshTableWithAll();
     }
 
-    private void refreshTable(List<Ingredient> ingredients) {
-        tableModel.setRowCount(0);
-        for (Ingredient i : ingredients) {
-            tableModel.addRow(new Object[]{i.getIngredientId(), i.getName(), i.getAmountInStock()});
+    // Utility method to initialise table
+    private void initTable() {
+        tableModel = new DefaultTableModel(
+                new String[]{"ID", "Type", "Name", "Price", "Quantity"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        table = new JTable(tableModel);
+        add(new JScrollPane(table), BorderLayout.CENTER);
+    }
+
+    // Initialise buttons and attach event listeners
+    private void initButtons() {
+        JPanel panel = new JPanel();
+
+        JButton createBtn = new JButton("Create");
+        JButton findBtn = new JButton("Find");
+        JButton refreshBtn = new JButton("Refresh");
+        JButton updateBtn = new JButton("Restock");
+        JButton deleteBtn = new JButton("Delete");
+
+        panel.add(createBtn);
+        panel.add(findBtn);
+        panel.add(refreshBtn);
+        panel.add(updateBtn);
+        panel.add(deleteBtn);
+
+        add(panel, BorderLayout.SOUTH);
+
+        // Disables buttons for non-admin users
+        if (currentUser.isAdmin() != 1) {
+            createBtn.setEnabled(false);
+            updateBtn.setEnabled(false);
+            deleteBtn.setEnabled(false);
+        }
+
+        // Attaching event listeners
+        createBtn.addActionListener(e -> handleCreate());
+        findBtn.addActionListener(e -> handleFind());
+        refreshBtn.addActionListener(e -> refreshTableWithAll());
+        updateBtn.addActionListener(e -> handleUpdate());
+        deleteBtn.addActionListener(e -> handleDelete());
+    }
+
+    // Handlers...
+
+    private void handleCreate() {
+        JTextField nameField = new JTextField();
+        JTextField priceField = new JTextField();
+        JTextField qtyField = new JTextField();
+        JComboBox<String> typeBox = new JComboBox<>(new String[]{"Food", "Drink"});
+
+        Object[] msg = {
+                "Type:", typeBox,
+                "Name:", nameField,
+                "Price:", priceField,
+                "Quantity:", qtyField
+        };
+
+        if (JOptionPane.showConfirmDialog(this, msg, "Create Item",
+                JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+
+            try {
+                String type = typeBox.getSelectedItem().toString();
+                String name = nameField.getText().trim();
+                float price = Float.parseFloat(priceField.getText().trim());
+                int qty = Integer.parseInt(qtyField.getText().trim());
+
+                if (name.isEmpty()) throw new IllegalArgumentException("Name empty");
+
+                MenuSnackItem item = type.equals("Food")
+                        ? new Food(0, name, price, qty)
+                        : new Drink(0, name, price, qty);
+
+                dao.create(item);
+                refreshTableWithAll();
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+            }
         }
     }
 
-    private void refreshTableWithAll() {
-        refreshTable(dao.getAll());
-    }
-
-    private void findIngredient() {
+    private void handleFind() {
         String name = JOptionPane.showInputDialog(this, "Enter name:");
         if (name == null || name.trim().isEmpty()) return;
 
-        Ingredient ing = dao.getByName(name.trim());
-        if (ing == null) {
+        MenuSnackItem item = dao.getByName(name.trim());
+
+        if (item == null) {
             JOptionPane.showMessageDialog(this, "Not found");
             return;
         }
 
-        List<Ingredient> list = new ArrayList<>();
-        list.add(ing);
+        List<MenuSnackItem> list = new ArrayList<>();
+        list.add(item);
+
         refreshTable(list);
     }
 
-    private void createIngredient() {
-        JTextField nameField = new JTextField();
-        JTextField qtyField = new JTextField();
-        Object[] msg = {"Name:", nameField, "Quantity:", qtyField};
-
-        if (JOptionPane.showConfirmDialog(this, msg, "Create Ingredient", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-            try {
-                String name = nameField.getText().trim();
-                int qty = Integer.parseInt(qtyField.getText().trim());
-                if (name.isEmpty()) throw new IllegalArgumentException("Name cannot be empty");
-                dao.create(new Ingredient(0, name, qty));
-                refreshTableWithAll();
-            } catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage()); }
-        }
-    }
-
-    private void updateIngredient() {
+    private void handleUpdate() {
         int row = table.getSelectedRow();
-        if (row == -1) { JOptionPane.showMessageDialog(this, "Select a row first"); return; }
+
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Select a row first");
+            return;
+        }
 
         int id = (int) tableModel.getValueAt(row, 0);
-        String name = tableModel.getValueAt(row, 1).toString();
-        int qty = (int) tableModel.getValueAt(row, 2);
+        String type = tableModel.getValueAt(row, 1).toString();
+        String name = tableModel.getValueAt(row, 2).toString();
+        float price = Float.parseFloat(tableModel.getValueAt(row, 3).toString());
+        
+        int qty = (int) tableModel.getValueAt(row, 4);
 
-        JTextField nameField = new JTextField(name);
+        // Restocking just updates the quantity
+
+        // JTextField nameField = new JTextField(name);
+        // JTextField priceField = new JTextField(String.valueOf(price));
+
         JTextField qtyField = new JTextField(String.valueOf(qty));
-        Object[] msg = {"Name:", nameField, "Quantity:", qtyField};
+        Object[] msg = {
+                // "Name:", nameField,
+                // "Price:", priceField,
+                "Quantity:", qtyField
+        };
 
-        if (JOptionPane.showConfirmDialog(this, msg, "Update Ingredient", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+        if (JOptionPane.showConfirmDialog(this, msg, "Update Item",
+                JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+
             try {
-                dao.update(new Ingredient(id, nameField.getText().trim(), Integer.parseInt(qtyField.getText().trim())));
+                // String newName = nameField.getText().trim();
+                // float newPrice = Float.parseFloat(priceField.getText().trim());
+                int newQty = Integer.parseInt(qtyField.getText().trim());
+
+                MenuSnackItem item = type.equals("Food")
+                        ? new Food(id, name, price, newQty)
+                        : new Drink(id, name, price, newQty);
+
+                // Only if user implements the interface CanRestock
+                if (currentUser instanceof CanRestock restocker) {
+                    System.out.println("Restocking menu item...");
+                    restocker.restock(item, newQty);
+                }
+
                 refreshTableWithAll();
-            } catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error"); }
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+            }
         }
     }
 
-    private void deleteIngredient() {
+    private void handleDelete() {
         int row = table.getSelectedRow();
-        if (row == -1) { JOptionPane.showMessageDialog(this, "Select a row first"); return; }
+
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Select a row first");
+            return;
+        }
 
         int id = (int) tableModel.getValueAt(row, 0);
-        if (JOptionPane.showConfirmDialog(this, "Delete?", "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+        String name = tableModel.getValueAt(row, 2).toString();
+
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Delete '" + name + "'?",
+                "Confirm",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
             dao.delete(id);
             refreshTableWithAll();
         }
     }
 
-    private void restockIngredient() {
-        int row = table.getSelectedRow();
-        if (row == -1) { JOptionPane.showMessageDialog(this, "Select a row first"); return; }
+    // Utility method to feed data into table
+    private void refreshTable(List<MenuSnackItem> items) {
+        tableModel.setRowCount(0);
 
-        int id = (int) tableModel.getValueAt(row, 0);
-        String input = JOptionPane.showInputDialog(this, "Enter amount:");
-        if (input == null) return;
-
-        try {
-            int amount = Integer.parseInt(input);
-            if (amount <= 0) throw new IllegalArgumentException();
-
-            Ingredient ingredient = dao.getById(id);
-            Manager manager = new Manager(currentUser.getId(), currentUser.getName(), currentUser.getPassword());
-            manager.restock(ingredient, amount);
-            dao.update(ingredient);
-            refreshTableWithAll();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Invalid amount");
+        for (MenuSnackItem i : items) {
+            tableModel.addRow(new Object[]{
+                    i.getId(),
+                    i.getType(),
+                    i.getName(),
+                    i.getPrice(),
+                    i.getAmountInStock()
+            });
         }
+    }
+
+    private void refreshTableWithAll() {
+        refreshTable(dao.getAll());
     }
 }

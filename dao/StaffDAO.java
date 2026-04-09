@@ -3,6 +3,7 @@ package dao;
 
 import java.sql.*;
 import java.util.*;
+import model.Manager;
 import model.Staff;
 
 public class StaffDAO extends BaseDAO implements DAO<Staff> {
@@ -19,7 +20,7 @@ public class StaffDAO extends BaseDAO implements DAO<Staff> {
             // Set name, password and admin privileges
             stmt.setString(1, staff.getName());
             stmt.setString(2, staff.getPassword());
-            stmt.setInt(3, staff.isAdmin() ? 1 : 0); // admin set to 1 else 0
+            stmt.setInt(3, staff.isAdmin());
             stmt.executeUpdate();
 
         // Handle error(s)
@@ -34,19 +35,28 @@ public class StaffDAO extends BaseDAO implements DAO<Staff> {
         try (
             // Prepare SELECT DML statement
             PreparedStatement stmt = getConnection().prepareStatement(
-                "SELECT * FROM staff WHERE id = ?")) {
+                "SELECT * FROM Staff WHERE id = ?"
+            );
+        ) {
             // Get staff id
             stmt.setInt(1, id);
             // Execute the statement
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) { // Access the first row
-                // Get the staff details
+                if (rs.getInt("is_admin") == 1) {
+                    return new Manager(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("password")
+                    );
+                }
+
                 return new Staff(
                     rs.getInt("id"),
                     rs.getString("name"),
                     rs.getString("password"),
-                    rs.getInt("is_admin") == 1
+                    rs.getInt("is_admin")
                 );
             }
         // Handle error(s)
@@ -67,11 +77,19 @@ public class StaffDAO extends BaseDAO implements DAO<Staff> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
+                if (rs.getInt("is_admin") == 1) {
+                    return new Manager(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("password")
+                    );
+                }
+
                 return new Staff(
                     rs.getInt("id"),
                     rs.getString("name"),
                     rs.getString("password"),
-                    rs.getInt("is_admin") == 1
+                    rs.getInt("is_admin") // Normally would be something other than 1
                 );
             }
         } catch (SQLException e) {
@@ -89,14 +107,21 @@ public class StaffDAO extends BaseDAO implements DAO<Staff> {
             // Create a static SELECT DML statement
             Statement stmt = getConnection().createStatement()) {
             // Execute the statement
-            ResultSet rs = stmt.executeQuery("SELECT * FROM staff");
-
+            ResultSet rs = stmt.executeQuery("SELECT * FROM Staff");
             while (rs.next()) { // Access the first row
+                if (rs.getInt("is_admin") == 1) {
+                    staffs.add(new Manager(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("password")
+                    ));
+                }
+
                 staffs.add(new Staff(
                     rs.getInt("id"),
                     rs.getString("name"),
                     rs.getString("password"),
-                    rs.getInt("is_admin") == 1
+                    rs.getInt("is_admin")
                 ));
             }
         // Handle error(s)
@@ -113,11 +138,13 @@ public class StaffDAO extends BaseDAO implements DAO<Staff> {
         try (
             // Prepare UPDATE DML statement
             PreparedStatement stmt = getConnection().prepareStatement(
-                "UPDATE staff SET name = ?, password = ?, is_admin = ? WHERE id = ?")) {
-            // Get staff name, password and admin privileges by id
+                "UPDATE Staff SET name = ?, password = ? WHERE id = ?"
+                );
+        ) {
+            // Get staff name, hashed password and id
             stmt.setString(1, staff.getName());
             stmt.setString(2, staff.getPassword());
-            stmt.setInt(3, staff.isAdmin() ? 1 : 0);
+            stmt.setInt(3, staff.isAdmin());
             stmt.setInt(4, staff.getId());
             // Execute the statement
             stmt.executeUpdate();
@@ -133,7 +160,9 @@ public class StaffDAO extends BaseDAO implements DAO<Staff> {
         try (
             // Prepare UPDATE DML statement
             PreparedStatement stmt = getConnection().prepareStatement(
-                "DELETE FROM staff WHERE id = ?")) {
+                "DELETE FROM Staff WHERE id = ?"
+            );
+        ) {
             // Get staff id
             stmt.setInt(1, id);
             // Execute the statement
