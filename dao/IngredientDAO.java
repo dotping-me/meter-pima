@@ -11,7 +11,7 @@ public class IngredientDAO extends BaseDAO implements DAO<Ingredient> {
     // Creates an ingredient
     @Override
     public void create(Ingredient ingredient) {
-        System.out.println("Creating new ingredient...");
+        System.out.println("New ingredient created");
 
         try (
             PreparedStatement stmt = getConnection().prepareStatement(

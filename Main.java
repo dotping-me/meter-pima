@@ -1,10 +1,8 @@
-// TODO: Make proper packages (folders) for better seperation of concerns
-// F u NO
-// Ton faire li seulment 🤣
+import java.sql.*;
 
 import db.DB;
-import gui.InventoryFrame;
-import java.sql.*;
+
+import gui.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -16,7 +14,7 @@ public class Main {
 
             // 3. Launch GUI
             javax.swing.SwingUtilities.invokeLater(() -> {
-                new InventoryFrame().setVisible(true);
+                new AuthFrame().setVisible(true);
             });
 
         // Handle error(s)
