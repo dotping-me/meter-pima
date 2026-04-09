@@ -11,10 +11,13 @@ public class AuthFrame extends JFrame {
     public AuthFrame() {
         setTitle("Staff Login");
         setSize(350, 200);
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         setLayout(new java.awt.GridLayout(4, 2, 10, 10));
         setLocationRelativeTo(null);
 
+        // Initialising elements
         JLabel nameLabel = new JLabel("Name:");
         JTextField nameField = new JTextField();
 
@@ -24,11 +27,13 @@ public class AuthFrame extends JFrame {
         JButton loginBtn = new JButton("Login");
         JButton exitBtn = new JButton("Exit");
 
+        // Adding elements to screen
         add(nameLabel); add(nameField);
         add(passwordLabel); add(passwordField);
         add(new JLabel()); add(new JLabel());
         add(loginBtn); add(exitBtn);
 
+        // Attaching event listeners
         loginBtn.addActionListener(e -> {
             String name = nameField.getText().trim();
             String password = new String(passwordField.getPassword()).trim();

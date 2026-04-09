@@ -3,6 +3,7 @@ package dao;
 
 import java.sql.*;
 import java.util.*;
+import model.Manager;
 import model.Staff;
 
 public class StaffDAO extends BaseDAO implements DAO<Staff> {
@@ -43,7 +44,14 @@ public class StaffDAO extends BaseDAO implements DAO<Staff> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) { // Access the first row
-                // Get the staff details
+                if (rs.getInt("is_admin") == 1) {
+                    return new Manager(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("password")
+                    );
+                }
+
                 return new Staff(
                     rs.getInt("id"),
                     rs.getString("name"),
@@ -69,11 +77,19 @@ public class StaffDAO extends BaseDAO implements DAO<Staff> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
+                if (rs.getInt("is_admin") == 1) {
+                    return new Manager(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("password")
+                    );
+                }
+
                 return new Staff(
                     rs.getInt("id"),
                     rs.getString("name"),
                     rs.getString("password"),
-                    rs.getInt("is_admin")
+                    rs.getInt("is_admin") // Normally would be something other than 1
                 );
             }
         } catch (SQLException e) {
@@ -93,6 +109,14 @@ public class StaffDAO extends BaseDAO implements DAO<Staff> {
             // Execute the statement
             ResultSet rs = stmt.executeQuery("SELECT * FROM Staff");
             while (rs.next()) { // Access the first row
+                if (rs.getInt("is_admin") == 1) {
+                    staffs.add(new Manager(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("password")
+                    ));
+                }
+
                 staffs.add(new Staff(
                     rs.getInt("id"),
                     rs.getString("name"),

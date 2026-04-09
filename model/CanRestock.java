@@ -5,5 +5,5 @@
 package model;
 
 public interface CanRestock {
-    public void restock(Ingredient ingredient, int amount);
+    public void restock(MenuSnackItem item, int amount);
 }

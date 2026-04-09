@@ -1,8 +1,8 @@
 package model;
 
-public class Food extends MenuItem {
-    public Food(int itemId, String name, float price) {
-        super(itemId, name, price);
+public class Food extends MenuSnackItem {
+    public Food(int id, String name, float price, int amountInStock) {
+        super(id, name, price, amountInStock);
     }
 
     // Abstract from MenuItem
